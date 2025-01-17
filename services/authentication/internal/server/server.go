@@ -4,8 +4,10 @@ import (
 	"fmt"
 	"log"
 	"net"
-	// "support_services_authentication/internal/database"
+	"support_services_authentication/internal/database"
 	"support_services_authentication/internal/handlers"
+	"support_services_authentication/internal/repository"
+	"support_services_authentication/internal/services"
 	pb "support_services_authentication/proto/api"
 
 	"google.golang.org/grpc"
@@ -13,15 +15,17 @@ import (
 
 func RunServer() {
 
-	var (
-		authenticationHandler handlers.AuthenticationHandler = *handlers.NewAuthenticationHandler()
-	)
+	//connect to PostgreSql database
+	db, dbErr := database.ConnectToPostgres("localhost", 5432, "support_services_db", "m.pourbafrani", "m.pourbafrani")
+	if dbErr != nil {
+		log.Fatalf("failed to connect  posgresql: %v", dbErr)
+	}
 
-	//connect to PostgreSql database 
-	// db , dbErr := database.ConnectToPostgres("",5432 ,"support_services_db", "podtgres","m.pourbafrani")
-	// if dbErr !=nil{
-	// 	log.Fatalf("failed to connect  posgresql: %v", dbErr)
-	// }
+	var (
+		repository            repository.AuthenticationRepository = repository.NewAuthenticationRepository(db)
+		authenticationService services.AuthenticationService      = services.NewAuthenticationService(repository)
+		authenticationHandler handlers.AuthenticationHandler      = *handlers.NewAuthenticationHandler(authenticationService)
+	)
 
 	//create net listenr for listen to grpc connection
 	listener, err := net.Listen("tcp", ":50052")
@@ -29,7 +33,6 @@ func RunServer() {
 		log.Fatalf("failed to listen on port 50051: %v", err)
 	}
 	fmt.Println("create listener")
-
 
 	//create grpc and serve on listener
 	grpcServer := grpc.NewServer()
