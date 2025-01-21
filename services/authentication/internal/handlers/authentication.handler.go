@@ -7,6 +7,9 @@ import (
 
 	"support_services_authentication/models"
 	pb "support_services_authentication/proto/api"
+
+	"google.golang.org/grpc/codes"
+	"google.golang.org/grpc/status"
 )
 
 type AuthenticationHandler struct {
@@ -25,5 +28,9 @@ func (c *AuthenticationHandler) SignIn(ctx context.Context, request *pb.SigninRe
 	pass := request.PassWord
 	fmt.Printf("your phone:%v , your pass:%v \n", phone, pass)
 	val := c.authenticationService.AddUser(&models.UserDto{Phone_number: phone, UserRole: "client", UserStatus: "enable"})
-	return &pb.SigninResponse{Data: &pb.UserInfo{UserId: fmt.Sprint(val.UserId), PhoneNumber: val.Phone_number, UserRole: val.UserRole, UserStatus: val.UserStatus}, Message: "success"}, nil
+	if val != nil {
+		return &pb.SigninResponse{Data: &pb.UserInfo{UserId: fmt.Sprint(val.UserId), PhoneNumber: val.Phone_number, UserRole: val.UserRole, UserStatus: val.UserStatus}, Message: "success"}, nil
+	} else {
+		return nil, status.Error(codes.Unknown, "some thing error")
+	}
 }

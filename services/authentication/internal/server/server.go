@@ -8,6 +8,7 @@ import (
 	"support_services_authentication/internal/handlers"
 	"support_services_authentication/internal/repository"
 	"support_services_authentication/internal/services"
+	"support_services_authentication/middleware"
 	pb "support_services_authentication/proto/api"
 
 	"google.golang.org/grpc"
@@ -16,7 +17,7 @@ import (
 func RunServer() {
 
 	//connect to PostgreSql database
-	db, dbErr := database.ConnectToPostgres("localhost", 5432, "support_services_db", "m.pourbafrani", "m.pourbafrani")
+	db, dbErr := database.ConnectToPostgres("localhost", 5432, "support_services_db", "postgres", "m.pourbafrani")
 	if dbErr != nil {
 		log.Fatalf("failed to connect  posgresql: %v", dbErr)
 	}
@@ -35,7 +36,7 @@ func RunServer() {
 	fmt.Println("create listener")
 
 	//create grpc and serve on listener
-	grpcServer := grpc.NewServer()
+	grpcServer := grpc.NewServer(grpc.UnaryInterceptor(middleware.UnaryInterceptor))
 	pb.RegisterAuthenticationServiceServer(grpcServer, &authenticationHandler)
 	fmt.Println("create grpc")
 	fmt.Printf("pre run server %v", listener.Addr().String())
