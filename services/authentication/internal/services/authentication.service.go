@@ -2,7 +2,7 @@ package services
 
 import (
 	"support_services_authentication/internal/repository"
-	"support_services_authentication/models"
+	"support_services_authentication/internal/models"
 )
 
 type (

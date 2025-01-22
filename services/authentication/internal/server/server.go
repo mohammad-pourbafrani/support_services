@@ -8,7 +8,7 @@ import (
 	"support_services_authentication/internal/handlers"
 	"support_services_authentication/internal/repository"
 	"support_services_authentication/internal/services"
-	"support_services_authentication/middleware"
+	"support_services_authentication/internal/middleware"
 	pb "support_services_authentication/proto/api"
 
 	"google.golang.org/grpc"

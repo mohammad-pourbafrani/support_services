@@ -5,7 +5,7 @@ import (
 	"fmt"
 	"support_services_authentication/internal/services"
 
-	"support_services_authentication/models"
+	"support_services_authentication/internal/models"
 	pb "support_services_authentication/proto/api"
 
 	"google.golang.org/grpc/codes"

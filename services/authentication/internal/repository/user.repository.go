@@ -3,7 +3,7 @@ package repository
 import (
 	"errors"
 	"fmt"
-	"support_services_authentication/models"
+	"support_services_authentication/internal/models"
 	"time"
 )
 

@@ -2,7 +2,7 @@ package repository
 
 import (
 	"database/sql"
-	"support_services_authentication/models"
+	"support_services_authentication/internal/models"
 )
 
 type (
