@@ -1,0 +1,27 @@
+syntax = "proto3";
+
+package authentication;
+
+option go_package = "./";
+
+
+service AuthenticationService {
+    rpc SignIn (SigninRequest) returns (SigninResponse);
+}
+
+message SigninRequest{
+  string phoneNumber =1;
+  SignInMethod signInMethod =4;
+  optional string password=2;
+  optional string otp =3;
+}
+
+enum SignInMethod{
+    PASSWORD = 0;
+    OTP = 1;
+}
+
+message SigninResponse{
+
+}
+
