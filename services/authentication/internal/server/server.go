@@ -6,9 +6,9 @@ import (
 	"net"
 	"support_services_authentication/internal/database"
 	"support_services_authentication/internal/handlers"
+	"support_services_authentication/internal/middleware"
 	"support_services_authentication/internal/repository"
 	"support_services_authentication/internal/services"
-	"support_services_authentication/internal/middleware"
 	pb "support_services_authentication/proto/api"
 
 	"google.golang.org/grpc"
@@ -17,7 +17,7 @@ import (
 func RunServer() {
 
 	//connect to PostgreSql database
-	db, dbErr := database.ConnectToPostgres("localhost", 5432, "support_services_db", "postgres", "m.pourbafrani")
+	db, dbErr := database.ConnectToPostgres("localhost", 5432, "support_services_db", "m.pourbafrani", "m.pourbafrani")
 	if dbErr != nil {
 		log.Fatalf("failed to connect  posgresql: %v", dbErr)
 	}
