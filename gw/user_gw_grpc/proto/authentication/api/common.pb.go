@@ -124,6 +124,58 @@ func (x *Token) GetRefreshExpTime() int64 {
 	return 0
 }
 
+type VerifyCode struct {
+	state         protoimpl.MessageState `protogen:"open.v1"`
+	PhoneNumber   string                 `protobuf:"bytes,1,opt,name=phoneNumber,proto3" json:"phoneNumber,omitempty"`
+	Code          string                 `protobuf:"bytes,2,opt,name=code,proto3" json:"code,omitempty"`
+	unknownFields protoimpl.UnknownFields
+	sizeCache     protoimpl.SizeCache
+}
+
+func (x *VerifyCode) Reset() {
+	*x = VerifyCode{}
+	mi := &file_proto_authentication_protos_common_proto_msgTypes[2]
+	ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
+	ms.StoreMessageInfo(mi)
+}
+
+func (x *VerifyCode) String() string {
+	return protoimpl.X.MessageStringOf(x)
+}
+
+func (*VerifyCode) ProtoMessage() {}
+
+func (x *VerifyCode) ProtoReflect() protoreflect.Message {
+	mi := &file_proto_authentication_protos_common_proto_msgTypes[2]
+	if x != nil {
+		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
+		if ms.LoadMessageInfo() == nil {
+			ms.StoreMessageInfo(mi)
+		}
+		return ms
+	}
+	return mi.MessageOf(x)
+}
+
+// Deprecated: Use VerifyCode.ProtoReflect.Descriptor instead.
+func (*VerifyCode) Descriptor() ([]byte, []int) {
+	return file_proto_authentication_protos_common_proto_rawDescGZIP(), []int{2}
+}
+
+func (x *VerifyCode) GetPhoneNumber() string {
+	if x != nil {
+		return x.PhoneNumber
+	}
+	return ""
+}
+
+func (x *VerifyCode) GetCode() string {
+	if x != nil {
+		return x.Code
+	}
+	return ""
+}
+
 var File_proto_authentication_protos_common_proto protoreflect.FileDescriptor
 
 var file_proto_authentication_protos_common_proto_rawDesc = []byte{
@@ -141,8 +193,12 @@ var file_proto_authentication_protos_common_proto_rawDesc = []byte{
 	0x61, 0x63, 0x63, 0x65, 0x73, 0x73, 0x45, 0x78, 0x70, 0x54, 0x69, 0x6d, 0x65, 0x12, 0x28, 0x0a,
 	0x10, 0x72, 0x65, 0x66, 0x72, 0x65, 0x73, 0x68, 0x5f, 0x65, 0x78, 0x70, 0x5f, 0x74, 0x69, 0x6d,
 	0x65, 0x18, 0x04, 0x20, 0x01, 0x28, 0x03, 0x52, 0x0e, 0x72, 0x65, 0x66, 0x72, 0x65, 0x73, 0x68,
-	0x45, 0x78, 0x70, 0x54, 0x69, 0x6d, 0x65, 0x42, 0x04, 0x5a, 0x02, 0x2e, 0x2f, 0x62, 0x06, 0x70,
-	0x72, 0x6f, 0x74, 0x6f, 0x33,
+	0x45, 0x78, 0x70, 0x54, 0x69, 0x6d, 0x65, 0x22, 0x42, 0x0a, 0x0a, 0x56, 0x65, 0x72, 0x69, 0x66,
+	0x79, 0x43, 0x6f, 0x64, 0x65, 0x12, 0x20, 0x0a, 0x0b, 0x70, 0x68, 0x6f, 0x6e, 0x65, 0x4e, 0x75,
+	0x6d, 0x62, 0x65, 0x72, 0x18, 0x01, 0x20, 0x01, 0x28, 0x09, 0x52, 0x0b, 0x70, 0x68, 0x6f, 0x6e,
+	0x65, 0x4e, 0x75, 0x6d, 0x62, 0x65, 0x72, 0x12, 0x12, 0x0a, 0x04, 0x63, 0x6f, 0x64, 0x65, 0x18,
+	0x02, 0x20, 0x01, 0x28, 0x09, 0x52, 0x04, 0x63, 0x6f, 0x64, 0x65, 0x42, 0x04, 0x5a, 0x02, 0x2e,
+	0x2f, 0x62, 0x06, 0x70, 0x72, 0x6f, 0x74, 0x6f, 0x33,
 }
 
 var (
@@ -157,10 +213,11 @@ func file_proto_authentication_protos_common_proto_rawDescGZIP() []byte {
 	return file_proto_authentication_protos_common_proto_rawDescData
 }
 
-var file_proto_authentication_protos_common_proto_msgTypes = make([]protoimpl.MessageInfo, 2)
+var file_proto_authentication_protos_common_proto_msgTypes = make([]protoimpl.MessageInfo, 3)
 var file_proto_authentication_protos_common_proto_goTypes = []any{
-	(*Empty)(nil), // 0: authentication.Empty
-	(*Token)(nil), // 1: authentication.Token
+	(*Empty)(nil),      // 0: authentication.Empty
+	(*Token)(nil),      // 1: authentication.Token
+	(*VerifyCode)(nil), // 2: authentication.VerifyCode
 }
 var file_proto_authentication_protos_common_proto_depIdxs = []int32{
 	0, // [0:0] is the sub-list for method output_type
@@ -181,7 +238,7 @@ func file_proto_authentication_protos_common_proto_init() {
 			GoPackagePath: reflect.TypeOf(x{}).PkgPath(),
 			RawDescriptor: file_proto_authentication_protos_common_proto_rawDesc,
 			NumEnums:      0,
-			NumMessages:   2,
+			NumMessages:   3,
 			NumExtensions: 0,
 			NumServices:   0,
 		},

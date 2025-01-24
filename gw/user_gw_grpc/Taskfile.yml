@@ -1,0 +1,7 @@
+version: "3"
+
+tasks:
+  generate:
+    desc: generate protobuf files
+    cmds:
+      - protoc --go_out=./proto/authentication/api/ --go-grpc_out=./proto/authentication/api/ ./proto/authentication/protos/*.proto

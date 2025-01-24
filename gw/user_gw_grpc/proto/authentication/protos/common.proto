@@ -4,6 +4,7 @@ package authentication;
 
 option go_package = "./";
 
+
 message Empty{}
 
 message Token{
@@ -12,3 +13,9 @@ message Token{
     int64 access_exp_time =3;
     int64 refresh_exp_time =4;
 }
+
+message VerifyCode{
+    string phoneNumber=1;
+    string code=2;
+}
+

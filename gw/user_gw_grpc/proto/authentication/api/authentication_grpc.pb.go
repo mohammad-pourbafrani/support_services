@@ -19,14 +19,22 @@ import (
 const _ = grpc.SupportPackageIsVersion9
 
 const (
-	AuthenticationService_SignIn_FullMethodName = "/authentication.AuthenticationService/SignIn"
+	AuthenticationService_SignUp_FullMethodName         = "/authentication.AuthenticationService/SignUp"
+	AuthenticationService_SignIn_FullMethodName         = "/authentication.AuthenticationService/SignIn"
+	AuthenticationService_Verify_FullMethodName         = "/authentication.AuthenticationService/Verify"
+	AuthenticationService_ResetPassword_FullMethodName  = "/authentication.AuthenticationService/ResetPassword"
+	AuthenticationService_ChangePassword_FullMethodName = "/authentication.AuthenticationService/ChangePassword"
 )
 
 // AuthenticationServiceClient is the client API for AuthenticationService service.
 //
 // For semantics around ctx use and closing/ending streaming RPCs, please refer to https://pkg.go.dev/google.golang.org/grpc/?tab=doc#ClientConn.NewStream.
 type AuthenticationServiceClient interface {
-	SignIn(ctx context.Context, in *SigninRequest, opts ...grpc.CallOption) (*SigninResponse, error)
+	SignUp(ctx context.Context, in *SignUpRequest, opts ...grpc.CallOption) (*Empty, error)
+	SignIn(ctx context.Context, in *SignInRequest, opts ...grpc.CallOption) (*SignInResponse, error)
+	Verify(ctx context.Context, in *VerifyCode, opts ...grpc.CallOption) (*Token, error)
+	ResetPassword(ctx context.Context, in *ResetPasswordRequest, opts ...grpc.CallOption) (*Empty, error)
+	ChangePassword(ctx context.Context, in *ChangePasswordRequest, opts ...grpc.CallOption) (*Empty, error)
 }
 
 type authenticationServiceClient struct {
@@ -37,10 +45,50 @@ func NewAuthenticationServiceClient(cc grpc.ClientConnInterface) AuthenticationS
 	return &authenticationServiceClient{cc}
 }
 
-func (c *authenticationServiceClient) SignIn(ctx context.Context, in *SigninRequest, opts ...grpc.CallOption) (*SigninResponse, error) {
+func (c *authenticationServiceClient) SignUp(ctx context.Context, in *SignUpRequest, opts ...grpc.CallOption) (*Empty, error) {
 	cOpts := append([]grpc.CallOption{grpc.StaticMethod()}, opts...)
-	out := new(SigninResponse)
+	out := new(Empty)
+	err := c.cc.Invoke(ctx, AuthenticationService_SignUp_FullMethodName, in, out, cOpts...)
+	if err != nil {
+		return nil, err
+	}
+	return out, nil
+}
+
+func (c *authenticationServiceClient) SignIn(ctx context.Context, in *SignInRequest, opts ...grpc.CallOption) (*SignInResponse, error) {
+	cOpts := append([]grpc.CallOption{grpc.StaticMethod()}, opts...)
+	out := new(SignInResponse)
 	err := c.cc.Invoke(ctx, AuthenticationService_SignIn_FullMethodName, in, out, cOpts...)
+	if err != nil {
+		return nil, err
+	}
+	return out, nil
+}
+
+func (c *authenticationServiceClient) Verify(ctx context.Context, in *VerifyCode, opts ...grpc.CallOption) (*Token, error) {
+	cOpts := append([]grpc.CallOption{grpc.StaticMethod()}, opts...)
+	out := new(Token)
+	err := c.cc.Invoke(ctx, AuthenticationService_Verify_FullMethodName, in, out, cOpts...)
+	if err != nil {
+		return nil, err
+	}
+	return out, nil
+}
+
+func (c *authenticationServiceClient) ResetPassword(ctx context.Context, in *ResetPasswordRequest, opts ...grpc.CallOption) (*Empty, error) {
+	cOpts := append([]grpc.CallOption{grpc.StaticMethod()}, opts...)
+	out := new(Empty)
+	err := c.cc.Invoke(ctx, AuthenticationService_ResetPassword_FullMethodName, in, out, cOpts...)
+	if err != nil {
+		return nil, err
+	}
+	return out, nil
+}
+
+func (c *authenticationServiceClient) ChangePassword(ctx context.Context, in *ChangePasswordRequest, opts ...grpc.CallOption) (*Empty, error) {
+	cOpts := append([]grpc.CallOption{grpc.StaticMethod()}, opts...)
+	out := new(Empty)
+	err := c.cc.Invoke(ctx, AuthenticationService_ChangePassword_FullMethodName, in, out, cOpts...)
 	if err != nil {
 		return nil, err
 	}
@@ -51,7 +99,11 @@ func (c *authenticationServiceClient) SignIn(ctx context.Context, in *SigninRequ
 // All implementations must embed UnimplementedAuthenticationServiceServer
 // for forward compatibility.
 type AuthenticationServiceServer interface {
-	SignIn(context.Context, *SigninRequest) (*SigninResponse, error)
+	SignUp(context.Context, *SignUpRequest) (*Empty, error)
+	SignIn(context.Context, *SignInRequest) (*SignInResponse, error)
+	Verify(context.Context, *VerifyCode) (*Token, error)
+	ResetPassword(context.Context, *ResetPasswordRequest) (*Empty, error)
+	ChangePassword(context.Context, *ChangePasswordRequest) (*Empty, error)
 	mustEmbedUnimplementedAuthenticationServiceServer()
 }
 
@@ -62,8 +114,20 @@ type AuthenticationServiceServer interface {
 // pointer dereference when methods are called.
 type UnimplementedAuthenticationServiceServer struct{}
 
-func (UnimplementedAuthenticationServiceServer) SignIn(context.Context, *SigninRequest) (*SigninResponse, error) {
+func (UnimplementedAuthenticationServiceServer) SignUp(context.Context, *SignUpRequest) (*Empty, error) {
+	return nil, status.Errorf(codes.Unimplemented, "method SignUp not implemented")
+}
+func (UnimplementedAuthenticationServiceServer) SignIn(context.Context, *SignInRequest) (*SignInResponse, error) {
 	return nil, status.Errorf(codes.Unimplemented, "method SignIn not implemented")
+}
+func (UnimplementedAuthenticationServiceServer) Verify(context.Context, *VerifyCode) (*Token, error) {
+	return nil, status.Errorf(codes.Unimplemented, "method Verify not implemented")
+}
+func (UnimplementedAuthenticationServiceServer) ResetPassword(context.Context, *ResetPasswordRequest) (*Empty, error) {
+	return nil, status.Errorf(codes.Unimplemented, "method ResetPassword not implemented")
+}
+func (UnimplementedAuthenticationServiceServer) ChangePassword(context.Context, *ChangePasswordRequest) (*Empty, error) {
+	return nil, status.Errorf(codes.Unimplemented, "method ChangePassword not implemented")
 }
 func (UnimplementedAuthenticationServiceServer) mustEmbedUnimplementedAuthenticationServiceServer() {}
 func (UnimplementedAuthenticationServiceServer) testEmbeddedByValue()                               {}
@@ -86,8 +150,26 @@ func RegisterAuthenticationServiceServer(s grpc.ServiceRegistrar, srv Authentica
 	s.RegisterService(&AuthenticationService_ServiceDesc, srv)
 }
 
+func _AuthenticationService_SignUp_Handler(srv interface{}, ctx context.Context, dec func(interface{}) error, interceptor grpc.UnaryServerInterceptor) (interface{}, error) {
+	in := new(SignUpRequest)
+	if err := dec(in); err != nil {
+		return nil, err
+	}
+	if interceptor == nil {
+		return srv.(AuthenticationServiceServer).SignUp(ctx, in)
+	}
+	info := &grpc.UnaryServerInfo{
+		Server:     srv,
+		FullMethod: AuthenticationService_SignUp_FullMethodName,
+	}
+	handler := func(ctx context.Context, req interface{}) (interface{}, error) {
+		return srv.(AuthenticationServiceServer).SignUp(ctx, req.(*SignUpRequest))
+	}
+	return interceptor(ctx, in, info, handler)
+}
+
 func _AuthenticationService_SignIn_Handler(srv interface{}, ctx context.Context, dec func(interface{}) error, interceptor grpc.UnaryServerInterceptor) (interface{}, error) {
-	in := new(SigninRequest)
+	in := new(SignInRequest)
 	if err := dec(in); err != nil {
 		return nil, err
 	}
@@ -99,7 +181,61 @@ func _AuthenticationService_SignIn_Handler(srv interface{}, ctx context.Context,
 		FullMethod: AuthenticationService_SignIn_FullMethodName,
 	}
 	handler := func(ctx context.Context, req interface{}) (interface{}, error) {
-		return srv.(AuthenticationServiceServer).SignIn(ctx, req.(*SigninRequest))
+		return srv.(AuthenticationServiceServer).SignIn(ctx, req.(*SignInRequest))
+	}
+	return interceptor(ctx, in, info, handler)
+}
+
+func _AuthenticationService_Verify_Handler(srv interface{}, ctx context.Context, dec func(interface{}) error, interceptor grpc.UnaryServerInterceptor) (interface{}, error) {
+	in := new(VerifyCode)
+	if err := dec(in); err != nil {
+		return nil, err
+	}
+	if interceptor == nil {
+		return srv.(AuthenticationServiceServer).Verify(ctx, in)
+	}
+	info := &grpc.UnaryServerInfo{
+		Server:     srv,
+		FullMethod: AuthenticationService_Verify_FullMethodName,
+	}
+	handler := func(ctx context.Context, req interface{}) (interface{}, error) {
+		return srv.(AuthenticationServiceServer).Verify(ctx, req.(*VerifyCode))
+	}
+	return interceptor(ctx, in, info, handler)
+}
+
+func _AuthenticationService_ResetPassword_Handler(srv interface{}, ctx context.Context, dec func(interface{}) error, interceptor grpc.UnaryServerInterceptor) (interface{}, error) {
+	in := new(ResetPasswordRequest)
+	if err := dec(in); err != nil {
+		return nil, err
+	}
+	if interceptor == nil {
+		return srv.(AuthenticationServiceServer).ResetPassword(ctx, in)
+	}
+	info := &grpc.UnaryServerInfo{
+		Server:     srv,
+		FullMethod: AuthenticationService_ResetPassword_FullMethodName,
+	}
+	handler := func(ctx context.Context, req interface{}) (interface{}, error) {
+		return srv.(AuthenticationServiceServer).ResetPassword(ctx, req.(*ResetPasswordRequest))
+	}
+	return interceptor(ctx, in, info, handler)
+}
+
+func _AuthenticationService_ChangePassword_Handler(srv interface{}, ctx context.Context, dec func(interface{}) error, interceptor grpc.UnaryServerInterceptor) (interface{}, error) {
+	in := new(ChangePasswordRequest)
+	if err := dec(in); err != nil {
+		return nil, err
+	}
+	if interceptor == nil {
+		return srv.(AuthenticationServiceServer).ChangePassword(ctx, in)
+	}
+	info := &grpc.UnaryServerInfo{
+		Server:     srv,
+		FullMethod: AuthenticationService_ChangePassword_FullMethodName,
+	}
+	handler := func(ctx context.Context, req interface{}) (interface{}, error) {
+		return srv.(AuthenticationServiceServer).ChangePassword(ctx, req.(*ChangePasswordRequest))
 	}
 	return interceptor(ctx, in, info, handler)
 }
@@ -112,8 +248,24 @@ var AuthenticationService_ServiceDesc = grpc.ServiceDesc{
 	HandlerType: (*AuthenticationServiceServer)(nil),
 	Methods: []grpc.MethodDesc{
 		{
+			MethodName: "SignUp",
+			Handler:    _AuthenticationService_SignUp_Handler,
+		},
+		{
 			MethodName: "SignIn",
 			Handler:    _AuthenticationService_SignIn_Handler,
+		},
+		{
+			MethodName: "Verify",
+			Handler:    _AuthenticationService_Verify_Handler,
+		},
+		{
+			MethodName: "ResetPassword",
+			Handler:    _AuthenticationService_ResetPassword_Handler,
+		},
+		{
+			MethodName: "ChangePassword",
+			Handler:    _AuthenticationService_ChangePassword_Handler,
 		},
 	},
 	Streams:  []grpc.StreamDesc{},
