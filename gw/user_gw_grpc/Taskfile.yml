@@ -1,6 +1,11 @@
 version: "3"
 
 tasks:
+  run:
+    desc: run server
+    cmds:
+      - GOFLAGS=-mod=mod go run cmd/main.go --listen-address 127.0.0.1:8080 --authentication-server-address 127.0.0.2:8081
+
   generate:
     desc: generate protobuf files
     cmds:
