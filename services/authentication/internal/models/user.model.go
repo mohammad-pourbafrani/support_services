@@ -3,9 +3,9 @@ package models
 import "time"
 
 type User struct {
-	UserId       int32     `json:"user_id"`
-	Phone_number string    `json:"phone_number"`
-	UserRole     string    `json:"user_role"`
-	UserStatus   string    `json:"user_status"`
-	CreatedAt    time.Time `json:"created_at"`
+	UserId      int64     `json:"user_id"`
+	PhoneNumber string    `json:"phone_number"`
+	UserRole    string    `json:"user_role"`
+	Verify      bool      `json:"verify"`
+	CreatedAt   time.Time `json:"created_at"`
 }

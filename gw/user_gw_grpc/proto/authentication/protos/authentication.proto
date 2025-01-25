@@ -14,6 +14,7 @@ service AuthenticationService {
   rpc Verify (VerifyCode) returns (Token);
   rpc ResetPassword (ResetPasswordRequest) returns (Empty);
   rpc ChangePassword (ChangePasswordRequest) returns (Empty);
+  rpc RefreshToken (Token) returns (Token);
 }
 
 

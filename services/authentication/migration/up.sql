@@ -8,7 +8,7 @@ CREATE TABLE "users" (
     "user_id" BIGSERIAL NOT NULL PRIMARY KEY,
     "phone_number" TEXT NOT NULL UNIQUE,
     "user_role" TEXT NOT NULL,
-    "user_status" TEXT NOT NULL,  
+	"verify" Bool NOT NULL,
     "created_at" TIMESTAMPTZ NOT NULL
 );
 
@@ -18,9 +18,6 @@ CREATE TABLE "tokens" (
     "refresh_token" TEXT NOT NULL,
     "user_id" BIGINT NOT NULL,
     "user_role" TEXT NOT NULL,
-    "token_status" TEXT NOT NULL,
-    "ip" TEXT NOT NULL,
-    "agent" TEXT NOT NULL,
     "created_at" TIMESTAMPTZ NOT NULL,
     "access_token_expire_at" TIMESTAMPTZ NOT NULL,
     "refresh_token_expire_at" TIMESTAMPTZ NOT NULL,
@@ -33,10 +30,3 @@ CREATE TABLE "passwords" (
     "password" TEXT NOT NULL
 );
 
-
--- Login history table
-CREATE TABLE "login_history"(
-    "id" SERIAL NOT NULL PRIMARY KEY,
-    "user_id" BigINT NOT NULL,
-    "created_at" TIMESTAMPTZ NOT NULL
-);

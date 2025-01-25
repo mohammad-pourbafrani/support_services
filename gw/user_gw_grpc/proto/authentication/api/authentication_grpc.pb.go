@@ -24,6 +24,7 @@ const (
 	AuthenticationService_Verify_FullMethodName         = "/authentication.AuthenticationService/Verify"
 	AuthenticationService_ResetPassword_FullMethodName  = "/authentication.AuthenticationService/ResetPassword"
 	AuthenticationService_ChangePassword_FullMethodName = "/authentication.AuthenticationService/ChangePassword"
+	AuthenticationService_RefreshToken_FullMethodName   = "/authentication.AuthenticationService/RefreshToken"
 )
 
 // AuthenticationServiceClient is the client API for AuthenticationService service.
@@ -35,6 +36,7 @@ type AuthenticationServiceClient interface {
 	Verify(ctx context.Context, in *VerifyCode, opts ...grpc.CallOption) (*Token, error)
 	ResetPassword(ctx context.Context, in *ResetPasswordRequest, opts ...grpc.CallOption) (*Empty, error)
 	ChangePassword(ctx context.Context, in *ChangePasswordRequest, opts ...grpc.CallOption) (*Empty, error)
+	RefreshToken(ctx context.Context, in *Token, opts ...grpc.CallOption) (*Token, error)
 }
 
 type authenticationServiceClient struct {
@@ -95,6 +97,16 @@ func (c *authenticationServiceClient) ChangePassword(ctx context.Context, in *Ch
 	return out, nil
 }
 
+func (c *authenticationServiceClient) RefreshToken(ctx context.Context, in *Token, opts ...grpc.CallOption) (*Token, error) {
+	cOpts := append([]grpc.CallOption{grpc.StaticMethod()}, opts...)
+	out := new(Token)
+	err := c.cc.Invoke(ctx, AuthenticationService_RefreshToken_FullMethodName, in, out, cOpts...)
+	if err != nil {
+		return nil, err
+	}
+	return out, nil
+}
+
 // AuthenticationServiceServer is the server API for AuthenticationService service.
 // All implementations must embed UnimplementedAuthenticationServiceServer
 // for forward compatibility.
@@ -104,6 +116,7 @@ type AuthenticationServiceServer interface {
 	Verify(context.Context, *VerifyCode) (*Token, error)
 	ResetPassword(context.Context, *ResetPasswordRequest) (*Empty, error)
 	ChangePassword(context.Context, *ChangePasswordRequest) (*Empty, error)
+	RefreshToken(context.Context, *Token) (*Token, error)
 	mustEmbedUnimplementedAuthenticationServiceServer()
 }
 
@@ -128,6 +141,9 @@ func (UnimplementedAuthenticationServiceServer) ResetPassword(context.Context, *
 }
 func (UnimplementedAuthenticationServiceServer) ChangePassword(context.Context, *ChangePasswordRequest) (*Empty, error) {
 	return nil, status.Errorf(codes.Unimplemented, "method ChangePassword not implemented")
+}
+func (UnimplementedAuthenticationServiceServer) RefreshToken(context.Context, *Token) (*Token, error) {
+	return nil, status.Errorf(codes.Unimplemented, "method RefreshToken not implemented")
 }
 func (UnimplementedAuthenticationServiceServer) mustEmbedUnimplementedAuthenticationServiceServer() {}
 func (UnimplementedAuthenticationServiceServer) testEmbeddedByValue()                               {}
@@ -240,6 +256,24 @@ func _AuthenticationService_ChangePassword_Handler(srv interface{}, ctx context.
 	return interceptor(ctx, in, info, handler)
 }
 
+func _AuthenticationService_RefreshToken_Handler(srv interface{}, ctx context.Context, dec func(interface{}) error, interceptor grpc.UnaryServerInterceptor) (interface{}, error) {
+	in := new(Token)
+	if err := dec(in); err != nil {
+		return nil, err
+	}
+	if interceptor == nil {
+		return srv.(AuthenticationServiceServer).RefreshToken(ctx, in)
+	}
+	info := &grpc.UnaryServerInfo{
+		Server:     srv,
+		FullMethod: AuthenticationService_RefreshToken_FullMethodName,
+	}
+	handler := func(ctx context.Context, req interface{}) (interface{}, error) {
+		return srv.(AuthenticationServiceServer).RefreshToken(ctx, req.(*Token))
+	}
+	return interceptor(ctx, in, info, handler)
+}
+
 // AuthenticationService_ServiceDesc is the grpc.ServiceDesc for AuthenticationService service.
 // It's only intended for direct use with grpc.RegisterService,
 // and not to be introspected or modified (even as a copy)
@@ -266,6 +300,10 @@ var AuthenticationService_ServiceDesc = grpc.ServiceDesc{
 		{
 			MethodName: "ChangePassword",
 			Handler:    _AuthenticationService_ChangePassword_Handler,
+		},
+		{
+			MethodName: "RefreshToken",
+			Handler:    _AuthenticationService_RefreshToken_Handler,
 		},
 	},
 	Streams:  []grpc.StreamDesc{},

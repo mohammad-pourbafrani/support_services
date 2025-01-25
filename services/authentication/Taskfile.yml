@@ -1,7 +1,14 @@
 version: '3'
 
 tasks:
+
+  generate:
+    desc: generate protobuf files
+    cmds:
+      - protoc --go_out=./proto/api/ --go-grpc_out=./proto/api/ ./proto/protos/*.proto
+
   
   run:
+    desc: run app
     cmds:
-      - go run cmd/main.go
+     - GOFLAGS=-mod=mod go run cmd/main.go --listen-address 127.0.0.1:8081 --redis-host 127.0.0.1 --redis-port 6379 --postgres-host localhost --postgres-port 5432 --db-name support_services_db --db-user-name postgres --db-password m.pourbafrani

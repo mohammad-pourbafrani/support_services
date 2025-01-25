@@ -5,23 +5,44 @@ package authentication;
 option go_package = "./";
 
 
-service AuthenticationService{
-    rpc SignIn (SigninRequest) returns (SigninResponse);
+import "services/authentication/proto/protos/common.proto";
+
+service AuthenticationService {
+
+  rpc SignUp (SignUpRequest) returns (Empty);
+  rpc SignIn (SignInRequest) returns (SignInResponse);
+  rpc Verify (VerifyCode) returns (Token);
+  rpc ResetPassword (ResetPasswordRequest) returns (Empty);
+  rpc ChangePassword (ChangePasswordRequest) returns (Empty);
+  rpc RefreshToken (Token) returns (Token);
 }
 
-message SigninRequest{
-    string phoneNumber = 1;
-    string passWord = 2;
+
+
+message SignUpRequest{
+  string phoneNumber = 1;
+  string password =2;
 }
 
-message SigninResponse{
-    UserInfo data = 1;
-    string message = 2;
+message SignInRequest{
+  string phoneNumber =1;
+  SignInMethod signInMethod =2;
+  optional string password=3;
+}
+message SignInResponse{
+  optional Token token=1;
 }
 
-message UserInfo{
-    string phoneNumber =1;
-    string userId=2;
-    string userRole=3;
-    string userStatus=4;
+enum SignInMethod{
+  PASSWORD = 0;
+  VERIFY_CODE = 1;
+}
+
+message ResetPasswordRequest{
+  string phoneNumber =1;
+}
+
+message ChangePasswordRequest{
+  VerifyCode code =1;
+  string password =2;
 }

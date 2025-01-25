@@ -5,8 +5,10 @@ import (
 	"appstates"
 	"log"
 	"net"
+	"support_services_user_gw_http/internal/client"
 	"support_services_user_gw_http/internal/controllers"
 	"support_services_user_gw_http/internal/middleware"
+	"support_services_user_gw_http/internal/services"
 	pb "support_services_user_gw_http/proto/authentication/api"
 
 	"google.golang.org/grpc"
@@ -26,7 +28,12 @@ func RunServer() {
 	}
 
 	var (
-		authenticationController controllers.AuthenticationController = *controllers.NewAuthenticationHandler()
+		authenticationServerConection = client.GrpcClientServerConnection(*authenticationServerAddress)
+
+		authenticationClient = pb.NewAuthenticationServiceClient(authenticationServerConection)
+
+		authenticationService    services.AuthenticationService       = services.NewAuthenticationService(authenticationClient)
+		authenticationController controllers.AuthenticationController = *controllers.NewAuthenticationHandler(authenticationService)
 	)
 
 	//create net listenr for listen to grpc connection
