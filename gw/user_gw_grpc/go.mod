@@ -10,7 +10,6 @@ require (
 )
 
 require (
-	appstates v0.0.0-00010101000000-000000000000
 	golang.org/x/net v0.32.0 // indirect
 	golang.org/x/sys v0.28.0 // indirect
 	golang.org/x/text v0.21.0 // indirect
