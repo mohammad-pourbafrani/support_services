@@ -1,6 +1,6 @@
 package models
 
 type VerifyCodeDto struct {
-	Code        int32
+	Code        string
 	PhoneNumber string
 }

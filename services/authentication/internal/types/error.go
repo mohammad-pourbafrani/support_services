@@ -7,6 +7,13 @@ import (
 
 // code 1001 insert db in authentication service
 // code 1002 response insert db in authentication service
+// code 1003 response select db in authentication service
+// code 1004 user_id not found
+// code 1005 select user data issue in user repository
+// code 1006 update user.verify data issue in user repository
+// code 1007 insert token data issue in token repository
+// code 1008 generate access token issue in token service
+// code 1009 generate refresh token issue in token service
 
 // Error represents an application-specific error with a message and code.
 type Error struct {

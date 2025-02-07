@@ -1,6 +1,7 @@
 package services
 
 import (
+	"fmt"
 	"support_services_authentication/internal/models"
 	"support_services_authentication/internal/repository"
 	"support_services_authentication/internal/types"
@@ -10,6 +11,7 @@ import (
 type (
 	AuthenticationService interface {
 		RegisterUser(data *models.UserDto) (*models.User, *types.Error)
+		VerifyRegisterUser(data *models.VerifyCodeDto) (*models.User, *types.Error)
 	}
 
 	authenticationService struct {
@@ -32,10 +34,28 @@ func (c *authenticationService) RegisterUser(data *models.UserDto) (*models.User
 	if randErr != nil {
 		return nil, types.NewInternalError(randErr.Error())
 	}
-	println("vevrify code %v ", code)
-	redisEror := c.repository.SetVerifyCode(&models.VerifyCodeDto{PhoneNumber: res.PhoneNumber, Code: code})
-	if redisEror != nil {
-		return nil, redisEror
+	fmt.Printf("verify code : %v", code)
+	redisError := c.repository.SetVerifyCode(&models.VerifyCodeDto{PhoneNumber: res.PhoneNumber, Code: fmt.Sprintf("%d", code)})
+	if redisError != nil {
+		return nil, redisError
 	}
 	return res, nil
+}
+
+func (c *authenticationService) VerifyRegisterUser(data *models.VerifyCodeDto) (*models.User, *types.Error) {
+	res, redisError := c.repository.GetVerifyCode(data)
+	if redisError != nil {
+		return nil, redisError
+	}
+
+	if *res == data.Code {
+		user, err := c.repository.SetVerifyUser(&data.PhoneNumber)
+		if err != nil {
+			return nil, err
+		}
+		return user, nil
+	} else {
+		return nil, types.NewBadRequestError("your verify code not exist")
+	}
+
 }

@@ -1,6 +1,7 @@
 package repository
 
 import (
+	"database/sql"
 	"fmt"
 	"support_services_authentication/internal/models"
 	"support_services_authentication/internal/types"
@@ -25,4 +26,33 @@ func (c *authenticationRepository) AddUser(data *models.UserDto) (*models.User, 
 		Verify:      data.Verify,
 		CreatedAt:   time.Now(),
 	}, nil
+}
+
+func (c *authenticationRepository) SetVerifyUser(phoneNumber *string) (*models.User, *types.Error) {
+	user, selectErr := c.findUserWithPhoneNumber(phoneNumber)
+	if selectErr != nil {
+		return nil, selectErr
+	}
+	query := `UPDATE "users" SET verify = $1 WHERE user_id = $2`
+	_, err := c.db.Exec(query, true, user.UserId)
+	if err != nil {
+		return nil, types.NewInternalError("internal issue, error code #1006")
+	}
+	user.Verify = true
+	return user, nil
+
+}
+
+func (c *authenticationRepository) findUserWithPhoneNumber(phoneNumber *string) (*models.User, *types.Error) {
+	var user models.User
+	query := `SELECT user_id, phone_number, user_role, verify, created_at FROM "users" WHERE phone_number = $1`
+	err := c.db.QueryRow(query, phoneNumber).Scan(&user.UserId, &user.PhoneNumber, &user.UserRole, &user.Verify, &user.CreatedAt)
+	if err != nil {
+		fmt.Println(err)
+		if err == sql.ErrNoRows {
+			return nil, types.NewInternalError("internal issue , error code #1004")
+		}
+		return nil, types.NewInternalError("internal issue , error code #1005")
+	}
+	return &user, nil
 }

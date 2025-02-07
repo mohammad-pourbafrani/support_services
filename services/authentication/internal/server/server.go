@@ -52,7 +52,8 @@ func RunServer() {
 	var (
 		repository            repository.AuthenticationRepository = repository.NewAuthenticationRepository(db, rdDb)
 		authenticationService services.AuthenticationService      = services.NewAuthenticationService(repository)
-		authenticationHandler handlers.AuthenticationHandler      = *handlers.NewAuthenticationHandler(authenticationService)
+		tokenService          services.TokenService               = services.NewTokenService(repository)
+		authenticationHandler handlers.AuthenticationHandler      = *handlers.NewAuthenticationHandler(authenticationService, tokenService)
 	)
 
 	//create net listenr for listen to grpc connection

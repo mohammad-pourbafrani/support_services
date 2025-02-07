@@ -13,6 +13,9 @@ type (
 		AddUser(data *models.UserDto) (*models.User, *types.Error)
 		AddPassword(data *models.PasswordDto) *types.Error
 		SetVerifyCode(data *models.VerifyCodeDto) *types.Error
+		GetVerifyCode(data *models.VerifyCodeDto) (*string, *types.Error)
+		SetVerifyUser(phoneNumber *string) (*models.User , *types.Error)
+		AddToken(token *models.TokenDto) *types.Error
 	}
 	authenticationRepository struct {
 		db   *sql.DB
