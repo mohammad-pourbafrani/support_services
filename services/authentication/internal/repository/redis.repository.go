@@ -10,7 +10,7 @@ import (
 
 func (r *authenticationRepository) SetVerifyCode(data *models.VerifyCodeDto) *types.Error {
 	ctx := context.Background()
-	_, err := r.rdDb.Set(ctx, data.PhoneNumber, fmt.Sprintf("%d", data.Code), time.Millisecond*120).Result()
+	_, err := r.rdDb.Set(ctx, data.PhoneNumber, data.Code, time.Second*120).Result()
 	if err != nil {
 		fmt.Println(err)
 		return types.NewInternalError("internal issue , error code #1001")
@@ -20,7 +20,7 @@ func (r *authenticationRepository) SetVerifyCode(data *models.VerifyCodeDto) *ty
 
 func (r *authenticationRepository) GetVerifyCode(data *models.VerifyCodeDto) (*string, *types.Error) {
 	ctx := context.Background()
-	val, err := r.rdDb.Get(ctx, data.PhoneNumber).Result()
+	val, err := r.rdDb.GetDel(ctx, data.PhoneNumber).Result()
 	if err != nil {
 		fmt.Println(err)
 		return nil, types.NewInternalError("internal issue , error code #1003")

@@ -24,7 +24,7 @@ func (c *AuthenticationController) SignUp(ctx context.Context, request *pb.SignU
 }
 
 func (c *AuthenticationController) Verify(ctx context.Context, request *pb.VerifyCode) (*pb.Token, error) {
-	return nil, nil
+	return c.authenticationService.VerifySignUp(ctx, request)
 }
 
 func (c *AuthenticationController) ResetPassword(ctx context.Context, request *pb.ResetPasswordRequest) (*pb.Empty, error) {
