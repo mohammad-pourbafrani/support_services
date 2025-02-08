@@ -29,7 +29,7 @@ func (c *authenticationRepository) AddUser(data *models.UserDto) (*models.User, 
 }
 
 func (c *authenticationRepository) SetVerifyUser(phoneNumber *string) (*models.User, *types.Error) {
-	user, selectErr := c.findUserWithPhoneNumber(phoneNumber)
+	user, selectErr := c.FindUserWithPhoneNumber(phoneNumber)
 	if selectErr != nil {
 		return nil, selectErr
 	}
@@ -43,7 +43,7 @@ func (c *authenticationRepository) SetVerifyUser(phoneNumber *string) (*models.U
 
 }
 
-func (c *authenticationRepository) findUserWithPhoneNumber(phoneNumber *string) (*models.User, *types.Error) {
+func (c *authenticationRepository) FindUserWithPhoneNumber(phoneNumber *string) (*models.User, *types.Error) {
 	var user models.User
 	query := `SELECT user_id, phone_number, user_role, verify, created_at FROM "users" WHERE phone_number = $1`
 	err := c.db.QueryRow(query, phoneNumber).Scan(&user.UserId, &user.PhoneNumber, &user.UserRole, &user.Verify, &user.CreatedAt)
@@ -55,4 +55,17 @@ func (c *authenticationRepository) findUserWithPhoneNumber(phoneNumber *string) 
 		return nil, types.NewInternalError("internal issue , error code #1005")
 	}
 	return &user, nil
+}
+
+func (c *authenticationRepository) UserExistsByPhoneNumber(phoneNumber *string) (bool, *types.Error) {
+	query := `SELECT 1 FROM "users" WHERE phone_number = $1`
+	var result int32
+	err := c.db.QueryRow(query, phoneNumber).Scan(&result)
+	if err != nil {
+		if err == sql.ErrNoRows {
+			return false, nil
+		}
+		return false, types.NewInternalError("internal issue, error code #1005")
+	}
+	return true, nil
 }

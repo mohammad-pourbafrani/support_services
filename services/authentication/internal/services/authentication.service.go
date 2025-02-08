@@ -24,18 +24,42 @@ func NewAuthenticationService(repository repository.AuthenticationRepository) Au
 }
 
 func (c *authenticationService) RegisterUser(data *models.UserDto) (*models.User, *types.Error) {
+
+	if userExist, existErr := c.repository.UserExistsByPhoneNumber(&data.PhoneNumber); existErr != nil {
+		return nil, existErr
+	} else if userExist {
+		return nil, types.NewBadRequestError("user exist , please sign in or reset password")
+	}
+
 	res, userErr := c.repository.AddUser(data)
 	if userErr != nil {
 		return nil, userErr
 	} else if passErr := c.repository.AddPassword(&models.PasswordDto{UserId: res.UserId, Password: data.Password}); passErr != nil {
 		return nil, passErr
 	}
-	code, randErr := utils.NextRandomInt32(120001, 510001)
-	if randErr != nil {
-		return nil, types.NewInternalError(randErr.Error())
+	var (
+		check      bool = true
+		verifyCode int32
+	)
+
+	for check {
+		code, randErr := utils.NextRandomInt32(120001, 510001)
+		if randErr != nil {
+			return nil, types.NewInternalError(randErr.Error())
+		}
+
+		existCode, err := c.repository.CheckExistCode(fmt.Sprintf("%d", code))
+		if err != nil {
+			return nil, err
+		}
+		if !existCode {
+			verifyCode = code
+			check = false
+		}
 	}
-	fmt.Printf("verify code : %v", code)
-	redisError := c.repository.SetVerifyCode(&models.VerifyCodeDto{PhoneNumber: res.PhoneNumber, Code: fmt.Sprintf("%d", code)})
+	//TODO: send verify code to user
+	fmt.Printf("verify code : %v", verifyCode)
+	redisError := c.repository.SetVerifyCode(&models.VerifyCodeDto{PhoneNumber: res.PhoneNumber, Code: fmt.Sprintf("%d", verifyCode)})
 	if redisError != nil {
 		return nil, redisError
 	}
@@ -43,12 +67,21 @@ func (c *authenticationService) RegisterUser(data *models.UserDto) (*models.User
 }
 
 func (c *authenticationService) VerifyRegisterUser(data *models.VerifyCodeDto) (*models.User, *types.Error) {
+
+	user, err := c.repository.FindUserWithPhoneNumber(&data.PhoneNumber)
+	if err != nil {
+		return nil, err
+	}
+	if user.Verify {
+		return nil, types.NewBadRequestError("user exist! please sign in")
+	}
+
 	res, redisError := c.repository.GetVerifyCode(data)
 	if redisError != nil {
 		return nil, redisError
 	}
 
-	if *res == data.Code {
+	if *res == data.PhoneNumber {
 		user, err := c.repository.SetVerifyUser(&data.PhoneNumber)
 		if err != nil {
 			return nil, err
