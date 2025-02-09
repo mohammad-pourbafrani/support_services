@@ -16,7 +16,7 @@ type (
 		GetVerifyCode(data *models.VerifyCodeDto) (*string, *types.Error)
 		CheckExistCode(data string) (bool, *types.Error)
 		SetVerifyUser(phoneNumber *string) (*models.User, *types.Error)
-		FindUserWithPhoneNumber(phoneNumber *string) (*models.User, *types.Error)
+		FindUserWithPhoneNumber(phoneNumber *string) (*models.User, bool, *types.Error)
 		UserExistsByPhoneNumber(phoneNumber *string) (bool, *types.Error)
 		AddToken(token *models.TokenDto) *types.Error
 	}

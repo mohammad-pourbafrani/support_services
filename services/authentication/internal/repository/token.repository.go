@@ -15,3 +15,5 @@ func (c *authenticationRepository) AddToken(token *models.TokenDto) *types.Error
 	}
 	return nil
 }
+
+

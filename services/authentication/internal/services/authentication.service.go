@@ -10,7 +10,7 @@ import (
 
 type (
 	AuthenticationService interface {
-		RegisterUser(data *models.UserDto) (*models.User, *types.Error)
+		RegisterUser(data *models.UserDto) *types.Error
 		VerifyRegisterUser(data *models.VerifyCodeDto) (*models.User, *types.Error)
 	}
 
@@ -23,20 +23,21 @@ func NewAuthenticationService(repository repository.AuthenticationRepository) Au
 	return &authenticationService{repository: repository}
 }
 
-func (c *authenticationService) RegisterUser(data *models.UserDto) (*models.User, *types.Error) {
+func (c *authenticationService) RegisterUser(data *models.UserDto) *types.Error {
 
-	if userExist, existErr := c.repository.UserExistsByPhoneNumber(&data.PhoneNumber); existErr != nil {
-		return nil, existErr
-	} else if userExist {
-		return nil, types.NewBadRequestError("user exist , please sign in or reset password")
+	if user, exist, existErr := c.repository.FindUserWithPhoneNumber(&data.PhoneNumber); existErr != nil {
+		return existErr
+	} else if user != nil && user.Verify {
+		return types.NewBadRequestError("user exist , please sign in or reset password")
+	} else if !exist {
+		res, userErr := c.repository.AddUser(data)
+		if userErr != nil {
+			return userErr
+		} else if passErr := c.repository.AddPassword(&models.PasswordDto{UserId: res.UserId, Password: data.Password}); passErr != nil {
+			return passErr
+		}
 	}
 
-	res, userErr := c.repository.AddUser(data)
-	if userErr != nil {
-		return nil, userErr
-	} else if passErr := c.repository.AddPassword(&models.PasswordDto{UserId: res.UserId, Password: data.Password}); passErr != nil {
-		return nil, passErr
-	}
 	var (
 		check      bool = true
 		verifyCode int32
@@ -45,12 +46,12 @@ func (c *authenticationService) RegisterUser(data *models.UserDto) (*models.User
 	for check {
 		code, randErr := utils.NextRandomInt32(120001, 510001)
 		if randErr != nil {
-			return nil, types.NewInternalError(randErr.Error())
+			return types.NewInternalError(randErr.Error())
 		}
 
 		existCode, err := c.repository.CheckExistCode(fmt.Sprintf("%d", code))
 		if err != nil {
-			return nil, err
+			return err
 		}
 		if !existCode {
 			verifyCode = code
@@ -59,16 +60,16 @@ func (c *authenticationService) RegisterUser(data *models.UserDto) (*models.User
 	}
 	//TODO: send verify code to user
 	fmt.Printf("verify code : %v", verifyCode)
-	redisError := c.repository.SetVerifyCode(&models.VerifyCodeDto{PhoneNumber: res.PhoneNumber, Code: fmt.Sprintf("%d", verifyCode)})
+	redisError := c.repository.SetVerifyCode(&models.VerifyCodeDto{PhoneNumber: data.PhoneNumber, Code: fmt.Sprintf("%d", verifyCode)})
 	if redisError != nil {
-		return nil, redisError
+		return redisError
 	}
-	return res, nil
+	return nil
 }
 
 func (c *authenticationService) VerifyRegisterUser(data *models.VerifyCodeDto) (*models.User, *types.Error) {
 
-	user, err := c.repository.FindUserWithPhoneNumber(&data.PhoneNumber)
+	user, _, err := c.repository.FindUserWithPhoneNumber(&data.PhoneNumber)
 	if err != nil {
 		return nil, err
 	}

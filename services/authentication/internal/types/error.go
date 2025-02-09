@@ -8,7 +8,7 @@ import (
 // code 1001 insert db in authentication service
 // code 1002 response insert db in authentication service
 // code 1003 response select db in authentication service
-// code 1004 user_id not found
+// code 1004
 // code 1005 select user data issue in user repository
 // code 1006 update user.verify data issue in user repository
 // code 1007 insert token data issue in token repository
