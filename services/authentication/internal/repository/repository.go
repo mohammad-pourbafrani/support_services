@@ -19,6 +19,7 @@ type (
 		FindUserWithPhoneNumber(phoneNumber *string) (*models.User, bool, *types.Error)
 		UserExistsByPhoneNumber(phoneNumber *string) (bool, *types.Error)
 		AddToken(token *models.TokenDto) *types.Error
+		GetPasswordWithUserId(userId *int64) (*models.Password, bool, *types.Error)
 	}
 	authenticationRepository struct {
 		db   *sql.DB

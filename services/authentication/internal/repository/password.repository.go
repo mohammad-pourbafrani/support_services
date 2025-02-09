@@ -1,11 +1,11 @@
 package repository
 
 import (
+	"database/sql"
 	"fmt"
 	"support_services_authentication/internal/models"
 	"support_services_authentication/internal/types"
 )
-
 
 func (c *authenticationRepository) AddPassword(data *models.PasswordDto) *types.Error {
 	query := `INSERT INTO "passwords" (user_id, password) VALUES ($1,$2)`
@@ -15,4 +15,18 @@ func (c *authenticationRepository) AddPassword(data *models.PasswordDto) *types.
 		return types.NewInternalError("internal issue , error code #1001")
 	}
 	return nil
+}
+
+func (c *authenticationRepository) GetPasswordWithUserId(userId *int64) (*models.Password, bool, *types.Error) {
+	var pass models.Password
+	query := `SELECT password FROM "passwords" WHERE user_id = $1`
+	err := c.db.QueryRow(query, userId).Scan(&pass.Password)
+	if err != nil {
+		fmt.Println(err)
+		if err == sql.ErrNoRows {
+			return nil, false, nil
+		}
+		return nil, false, types.NewInternalError("internal issue , error code #1004")
+	}
+	return &pass, true, nil
 }

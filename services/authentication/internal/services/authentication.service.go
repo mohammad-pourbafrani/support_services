@@ -12,6 +12,7 @@ type (
 	AuthenticationService interface {
 		RegisterUser(data *models.UserDto) *types.Error
 		VerifyRegisterUser(data *models.VerifyCodeDto) (*models.User, *types.Error)
+		LogIn(data *models.LogInDto) (*models.User, *types.Error)
 	}
 
 	authenticationService struct {
@@ -91,5 +92,62 @@ func (c *authenticationService) VerifyRegisterUser(data *models.VerifyCodeDto) (
 	} else {
 		return nil, types.NewBadRequestError("your verify code not exist")
 	}
+
+}
+
+func (c *authenticationService) LogIn(data *models.LogInDto) (*models.User, *types.Error) {
+
+	user, exist, err := c.repository.FindUserWithPhoneNumber(&data.PhoneNumber)
+
+	if err != nil {
+		return nil, err
+	}
+
+	if exist && !user.Verify {
+		return nil, types.NewBadRequestError("user not verified , please verfiy user")
+	} else if !exist {
+		return nil, types.NewBadRequestError("user not exist , please sign up")
+	}
+
+	if data.SignInMethod == models.PASSWORD {
+		pass, _, passErr := c.repository.GetPasswordWithUserId(&user.UserId)
+		if passErr != nil {
+			return nil, passErr
+		}
+		if data.Password == pass.Password {
+			return user, nil
+		}
+	}
+
+	if data.SignInMethod == models.VERIFY_CODE {
+		var (
+			check      bool = true
+			verifyCode int32
+		)
+
+		for check {
+			code, randErr := utils.NextRandomInt32(510002, 990099)
+			if randErr != nil {
+				return nil, types.NewInternalError(randErr.Error())
+			}
+
+			existCode, err := c.repository.CheckExistCode(fmt.Sprintf("%d", code))
+			if err != nil {
+				return nil, err
+			}
+			if !existCode {
+				verifyCode = code
+				check = false
+			}
+		}
+		//TODO: send verify code to user
+		fmt.Printf("verify code : %v", verifyCode)
+		redisError := c.repository.SetVerifyCode(&models.VerifyCodeDto{PhoneNumber: data.PhoneNumber, Code: fmt.Sprintf("%d", verifyCode)})
+		if redisError != nil {
+			return nil, redisError
+		}
+	}
+
+	return user, nil
 
 }

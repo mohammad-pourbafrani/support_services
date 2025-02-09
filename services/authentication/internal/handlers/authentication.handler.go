@@ -25,16 +25,28 @@ func NewAuthenticationHandler(authenticationService services.AuthenticationServi
 	}
 }
 func (c *AuthenticationHandler) SignIn(ctx context.Context, request *pb.SignInRequest) (*pb.SignInResponse, error) {
-	// fmt.Println("call api sign in")
-	// phone := request.PhoneNumber
-	// pass := request.Password
-	// fmt.Printf("your phone:%v , your pass:%v \n", phone, pass)
-	// val := c.authenticationService.AddUser(&models.UserDto{Phone_number: phone, UserRole: "client", UserStatus: "enable"})
-	// if val != nil {
-	// 	return nil, nil
-	// } else {
-	// 	return nil, status.Error(codes.Unknown, "some thing error")
-	// }
+
+	user, err := c.authenticationService.LogIn(&models.LogInDto{PhoneNumber: request.PhoneNumber, Password: *request.Password, SignInMethod: models.SignInMethod(request.SignInMethod)})
+
+	if err != nil {
+		return nil, err.ErrorToGRPCStatus()
+	}
+
+	if request.SignInMethod == pb.SignInMethod_PASSWORD {
+		token, tokenErr := c.tokenService.AddToken(user)
+		if tokenErr != nil {
+			return nil, tokenErr.ErrorToGRPCStatus()
+		}
+		return &pb.SignInResponse{
+			Token: &pb.Token{
+				AccessToken:    token.AccessToken,
+				RefreshToken:   token.RefreshToken,
+				AccessExpTime:  token.AccessExpireTime.Unix(),
+				RefreshExpTime: token.AccessExpireTime.Unix(),
+			},
+		}, nil
+	}
+
 	return nil, nil
 }
 
