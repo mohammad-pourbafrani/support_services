@@ -33,7 +33,7 @@ const (
 type AuthenticationServiceClient interface {
 	SignUp(ctx context.Context, in *SignUpRequest, opts ...grpc.CallOption) (*Empty, error)
 	SignIn(ctx context.Context, in *SignInRequest, opts ...grpc.CallOption) (*SignInResponse, error)
-	Verify(ctx context.Context, in *VerifyCode, opts ...grpc.CallOption) (*Token, error)
+	Verify(ctx context.Context, in *VerifyRequest, opts ...grpc.CallOption) (*Token, error)
 	ResetPassword(ctx context.Context, in *ResetPasswordRequest, opts ...grpc.CallOption) (*Empty, error)
 	ChangePassword(ctx context.Context, in *ChangePasswordRequest, opts ...grpc.CallOption) (*Empty, error)
 	RefreshToken(ctx context.Context, in *Token, opts ...grpc.CallOption) (*Token, error)
@@ -67,7 +67,7 @@ func (c *authenticationServiceClient) SignIn(ctx context.Context, in *SignInRequ
 	return out, nil
 }
 
-func (c *authenticationServiceClient) Verify(ctx context.Context, in *VerifyCode, opts ...grpc.CallOption) (*Token, error) {
+func (c *authenticationServiceClient) Verify(ctx context.Context, in *VerifyRequest, opts ...grpc.CallOption) (*Token, error) {
 	cOpts := append([]grpc.CallOption{grpc.StaticMethod()}, opts...)
 	out := new(Token)
 	err := c.cc.Invoke(ctx, AuthenticationService_Verify_FullMethodName, in, out, cOpts...)
@@ -113,7 +113,7 @@ func (c *authenticationServiceClient) RefreshToken(ctx context.Context, in *Toke
 type AuthenticationServiceServer interface {
 	SignUp(context.Context, *SignUpRequest) (*Empty, error)
 	SignIn(context.Context, *SignInRequest) (*SignInResponse, error)
-	Verify(context.Context, *VerifyCode) (*Token, error)
+	Verify(context.Context, *VerifyRequest) (*Token, error)
 	ResetPassword(context.Context, *ResetPasswordRequest) (*Empty, error)
 	ChangePassword(context.Context, *ChangePasswordRequest) (*Empty, error)
 	RefreshToken(context.Context, *Token) (*Token, error)
@@ -133,7 +133,7 @@ func (UnimplementedAuthenticationServiceServer) SignUp(context.Context, *SignUpR
 func (UnimplementedAuthenticationServiceServer) SignIn(context.Context, *SignInRequest) (*SignInResponse, error) {
 	return nil, status.Errorf(codes.Unimplemented, "method SignIn not implemented")
 }
-func (UnimplementedAuthenticationServiceServer) Verify(context.Context, *VerifyCode) (*Token, error) {
+func (UnimplementedAuthenticationServiceServer) Verify(context.Context, *VerifyRequest) (*Token, error) {
 	return nil, status.Errorf(codes.Unimplemented, "method Verify not implemented")
 }
 func (UnimplementedAuthenticationServiceServer) ResetPassword(context.Context, *ResetPasswordRequest) (*Empty, error) {
@@ -203,7 +203,7 @@ func _AuthenticationService_SignIn_Handler(srv interface{}, ctx context.Context,
 }
 
 func _AuthenticationService_Verify_Handler(srv interface{}, ctx context.Context, dec func(interface{}) error, interceptor grpc.UnaryServerInterceptor) (interface{}, error) {
-	in := new(VerifyCode)
+	in := new(VerifyRequest)
 	if err := dec(in); err != nil {
 		return nil, err
 	}
@@ -215,7 +215,7 @@ func _AuthenticationService_Verify_Handler(srv interface{}, ctx context.Context,
 		FullMethod: AuthenticationService_Verify_FullMethodName,
 	}
 	handler := func(ctx context.Context, req interface{}) (interface{}, error) {
-		return srv.(AuthenticationServiceServer).Verify(ctx, req.(*VerifyCode))
+		return srv.(AuthenticationServiceServer).Verify(ctx, req.(*VerifyRequest))
 	}
 	return interceptor(ctx, in, info, handler)
 }

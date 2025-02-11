@@ -8,7 +8,7 @@ import (
 type (
 	AuthenticationService interface {
 		SignUp(ctx context.Context, request *pb.SignUpRequest) (*pb.Empty, error)
-		VerifySignUp(ctx context.Context, request *pb.VerifyCode) (*pb.Token, error)
+		VerifySignUp(ctx context.Context, request *pb.VerifyRequest) (*pb.Token, error)
 		SignIn(ctx context.Context, request *pb.SignInRequest) (*pb.SignInResponse, error)
 	}
 
@@ -27,7 +27,7 @@ func (s *authenticationService) SignUp(ctx context.Context, request *pb.SignUpRe
 }
 
 // VerifyOtp implements AuthenticationService.
-func (s *authenticationService) VerifySignUp(ctx context.Context, request *pb.VerifyCode) (*pb.Token, error) {
+func (s *authenticationService) VerifySignUp(ctx context.Context, request *pb.VerifyRequest) (*pb.Token, error) {
 	return s.authenticationClient.Verify(ctx, request)
 }
 

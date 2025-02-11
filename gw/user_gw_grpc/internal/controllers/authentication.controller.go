@@ -23,7 +23,7 @@ func (c *AuthenticationController) SignUp(ctx context.Context, request *pb.SignU
 	return c.authenticationService.SignUp(ctx, request)
 }
 
-func (c *AuthenticationController) Verify(ctx context.Context, request *pb.VerifyCode) (*pb.Token, error) {
+func (c *AuthenticationController) Verify(ctx context.Context, request *pb.VerifyRequest) (*pb.Token, error) {
 	return c.authenticationService.VerifySignUp(ctx, request)
 }
 

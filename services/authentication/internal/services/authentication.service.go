@@ -13,6 +13,7 @@ type (
 		RegisterUser(data *models.UserDto) *types.Error
 		VerifyRegisterUser(data *models.VerifyCodeDto) (*models.User, *types.Error)
 		LogIn(data *models.LogInDto) (*models.User, *types.Error)
+		LogInWithVerifyCode(data *models.VerifyCodeDto) (*models.User, *types.Error)
 	}
 
 	authenticationService struct {
@@ -104,7 +105,7 @@ func (c *authenticationService) LogIn(data *models.LogInDto) (*models.User, *typ
 	}
 
 	if exist && !user.Verify {
-		return nil, types.NewBadRequestError("user not verified , please verfiy user")
+		return nil, types.NewBadRequestError("user not verified , please verify user")
 	} else if !exist {
 		return nil, types.NewBadRequestError("user not exist , please sign up")
 	}
@@ -151,5 +152,32 @@ func (c *authenticationService) LogIn(data *models.LogInDto) (*models.User, *typ
 	}
 
 	return user, nil
+
+}
+
+func (c *authenticationService) LogInWithVerifyCode(data *models.VerifyCodeDto) (*models.User, *types.Error) {
+
+	user, exist, err := c.repository.FindUserWithPhoneNumber(&data.PhoneNumber)
+
+	if err != nil {
+		return nil, err
+	}
+
+	if exist && !user.Verify {
+		return nil, types.NewBadRequestError("user not verified , please verify user")
+	} else if !exist {
+		return nil, types.NewBadRequestError("user not exist , please sign up")
+	}
+
+	res, redisError := c.repository.GetVerifyCode(data)
+	if redisError != nil {
+		return nil, redisError
+	}
+
+	if *res == data.PhoneNumber {
+		return user, nil
+	} else {
+		return nil, types.NewBadRequestError("your verify code not exist")
+	}
 
 }

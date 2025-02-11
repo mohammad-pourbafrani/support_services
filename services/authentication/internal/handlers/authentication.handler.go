@@ -5,6 +5,7 @@ import (
 	// "fmt"
 	"support_services_authentication/internal/models"
 	"support_services_authentication/internal/services"
+	"support_services_authentication/internal/types"
 
 	// "support_services_authentication/internal/models"
 	pb "support_services_authentication/proto/api"
@@ -26,7 +27,19 @@ func NewAuthenticationHandler(authenticationService services.AuthenticationServi
 }
 func (c *AuthenticationHandler) SignIn(ctx context.Context, request *pb.SignInRequest) (*pb.SignInResponse, error) {
 
-	user, err := c.authenticationService.LogIn(&models.LogInDto{PhoneNumber: request.PhoneNumber, Password: *request.Password, SignInMethod: models.SignInMethod(request.SignInMethod)})
+	var loginDto *models.LogInDto = &models.LogInDto{
+		PhoneNumber:  request.PhoneNumber,
+		Password:     "",
+		SignInMethod: models.SignInMethod(request.SignInMethod)}
+
+	if request.SignInMethod == pb.SignInMethod_PASSWORD {
+		if request.Password == nil {
+			return nil, types.NewBadRequestError("password is empty , please send password").ErrorToGRPCStatus()
+		}
+		loginDto.Password = *request.Password
+	}
+
+	user, err := c.authenticationService.LogIn(loginDto)
 
 	if err != nil {
 		return nil, err.ErrorToGRPCStatus()
@@ -58,21 +71,43 @@ func (c *AuthenticationHandler) SignUp(ctx context.Context, request *pb.SignUpRe
 	return &pb.Empty{}, nil
 }
 
-func (c *AuthenticationHandler) Verify(ctx context.Context, request *pb.VerifyCode) (*pb.Token, error) {
-	user, err := c.authenticationService.VerifyRegisterUser(&models.VerifyCodeDto{Code: request.Code, PhoneNumber: request.PhoneNumber})
-	if err != nil {
-		return nil, err.ErrorToGRPCStatus()
+func (c *AuthenticationHandler) Verify(ctx context.Context, request *pb.VerifyRequest) (*pb.Token, error) {
+
+	if request.VerifyMethod == pb.VerifyMethod_SIGNUP {
+
+		user, err := c.authenticationService.VerifyRegisterUser(&models.VerifyCodeDto{Code: request.VerifyCode.Code, PhoneNumber: request.VerifyCode.PhoneNumber})
+		if err != nil {
+			return nil, err.ErrorToGRPCStatus()
+		}
+		token, tokenErr := c.tokenService.AddToken(user)
+		if tokenErr != nil {
+			return nil, tokenErr.ErrorToGRPCStatus()
+		}
+		return &pb.Token{
+			AccessToken:    token.AccessToken,
+			RefreshToken:   token.RefreshToken,
+			AccessExpTime:  token.AccessExpireTime.Unix(),
+			RefreshExpTime: token.AccessExpireTime.Unix(),
+		}, nil
+	} else if request.VerifyMethod == pb.VerifyMethod_SIGNIN {
+		user, err := c.authenticationService.LogInWithVerifyCode(&models.VerifyCodeDto{Code: request.VerifyCode.Code, PhoneNumber: request.VerifyCode.PhoneNumber})
+		if err != nil {
+			return nil, err.ErrorToGRPCStatus()
+		}
+		token, tokenErr := c.tokenService.AddToken(user)
+		if tokenErr != nil {
+			return nil, tokenErr.ErrorToGRPCStatus()
+		}
+		return &pb.Token{
+			AccessToken:    token.AccessToken,
+			RefreshToken:   token.RefreshToken,
+			AccessExpTime:  token.AccessExpireTime.Unix(),
+			RefreshExpTime: token.AccessExpireTime.Unix(),
+		}, nil
+	} else {
+		return nil, types.NewBadRequestError("verify method not correct").ErrorToGRPCStatus()
 	}
-	token, tokenErr := c.tokenService.AddToken(user)
-	if tokenErr != nil {
-		return nil, tokenErr.ErrorToGRPCStatus()
-	}
-	return &pb.Token{
-		AccessToken:    token.AccessToken,
-		RefreshToken:   token.RefreshToken,
-		AccessExpTime:  token.AccessExpireTime.Unix(),
-		RefreshExpTime: token.AccessExpireTime.Unix(),
-	}, nil
+
 }
 
 func (c *AuthenticationHandler) ResetPassword(ctx context.Context, request *pb.ResetPasswordRequest) (*pb.Empty, error) {

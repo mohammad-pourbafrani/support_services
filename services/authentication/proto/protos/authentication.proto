@@ -11,7 +11,7 @@ service AuthenticationService {
 
   rpc SignUp (SignUpRequest) returns (Empty);
   rpc SignIn (SignInRequest) returns (SignInResponse);
-  rpc Verify (VerifyCode) returns (Token);
+  rpc Verify (VerifyRequest) returns (Token);
   rpc ResetPassword (ResetPasswordRequest) returns (Empty);
   rpc ChangePassword (ChangePasswordRequest) returns (Empty);
   rpc RefreshToken (Token) returns (Token);
@@ -36,6 +36,16 @@ message SignInResponse{
 enum SignInMethod{
   PASSWORD = 0;
   VERIFY_CODE = 1;
+}
+
+enum VerifyMethod{
+  SIGNUP = 0;
+  SIGNIN = 1;
+}
+
+message VerifyRequest{
+  VerifyMethod verifyMethod=1;
+  VerifyCode verifyCode=2;
 }
 
 message ResetPasswordRequest{
