@@ -116,6 +116,8 @@ func (c *authenticationService) LogIn(data *models.LogInDto) (*models.User, *typ
 		}
 		if data.Password == pass.Password {
 			return user, nil
+		} else {
+			return nil, types.NewBadRequestError("the password is wrong")
 		}
 	}
 

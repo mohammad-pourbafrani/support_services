@@ -16,7 +16,7 @@ func NewAuthenticationHandler(authenticationService services.AuthenticationServi
 }
 
 func (c *AuthenticationController) SignIn(ctx context.Context, request *pb.SignInRequest) (*pb.SignInResponse, error) {
-	return nil, nil
+	return c.authenticationService.SignIn(ctx, request)
 }
 
 func (c *AuthenticationController) SignUp(ctx context.Context, request *pb.SignUpRequest) (*pb.Empty, error) {

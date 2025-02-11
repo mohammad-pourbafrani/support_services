@@ -51,7 +51,7 @@ func (c *AuthenticationHandler) SignIn(ctx context.Context, request *pb.SignInRe
 }
 
 func (c *AuthenticationHandler) SignUp(ctx context.Context, request *pb.SignUpRequest) (*pb.Empty, error) {
-	err := c.authenticationService.RegisterUser(&models.UserDto{PhoneNumber: request.GetPhoneNumber(), UserRole: "client", Verify: false})
+	err := c.authenticationService.RegisterUser(&models.UserDto{PhoneNumber: request.GetPhoneNumber(), Password: request.GetPassword(), UserRole: "client", Verify: false})
 	if err != nil {
 		return nil, err.ErrorToGRPCStatus()
 	}
