@@ -1,6 +1,7 @@
 package models
 
-type VerifyCodeDto struct {
+type ChangePasswordDto struct {
 	Code        string `json:"code"`
+	Password    string `json:"password"`
 	PhoneNumber string `json:"phone_number"`
 }

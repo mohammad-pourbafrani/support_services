@@ -30,3 +30,12 @@ func (c *authenticationRepository) GetPasswordWithUserId(userId *int64) (*models
 	}
 	return &pass, true, nil
 }
+
+func (c *authenticationRepository) UpdatePassword(data *models.PasswordDto) *types.Error {
+	query := `UPDATE "passwords" SET password = $1 WHERE user_id = $2`
+	_, err := c.db.Exec(query, data.Password, data.UserId)
+	if err != nil {
+		return types.NewInternalError("internal issue, error code #1010")
+	}
+	return nil
+}

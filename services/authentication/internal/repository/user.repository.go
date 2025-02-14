@@ -69,3 +69,19 @@ func (c *authenticationRepository) UserExistsByPhoneNumber(phoneNumber *string) 
 	}
 	return true, nil
 }
+
+func (c *authenticationRepository) FindUserWithUserId(userId *int64) (*models.User, bool, *types.Error) {
+
+	var user models.User
+	query := `SELECT user_id, phone_number, user_role, verify, created_at FROM "users" WHERE user_id = $1`
+	err := c.db.QueryRow(query, userId).Scan(&user.UserId, &user.PhoneNumber, &user.UserRole, &user.Verify, &user.CreatedAt)
+	if err != nil {
+		fmt.Println(err)
+		if err == sql.ErrNoRows {
+			return nil, false, nil
+		}
+		return nil, false, types.NewInternalError("internal issue , error code #1015")
+	}
+	return &user, true, nil
+
+}

@@ -11,6 +11,7 @@ import (
 type (
 	TokenService interface {
 		AddToken(user *models.User) (*models.Token, *types.Error)
+		RenewToken(data *models.RenewTokenDto) (*models.Token, *types.Error)
 	}
 	tokenService struct {
 		repository repository.AuthenticationRepository
@@ -50,4 +51,36 @@ func (s *tokenService) AddToken(user *models.User) (*models.Token, *types.Error)
 		AccessExpireTime:  token.AccessExpireTime,
 		RefreshExpireTime: token.RefreshExpireTime,
 	}, nil
+}
+
+func (c *tokenService) RenewToken(data *models.RenewTokenDto) (*models.Token, *types.Error) {
+
+	token, tokenErr := c.repository.GetTokenByAccessTokenAndRefreshToken(&data.AccessToken, &data.RefreshToken)
+	if tokenErr != nil {
+		return nil, tokenErr
+	}
+
+	refreshErr := utils.ValidateTokenExpireTime(token.RefreshExpireTime)
+
+	if refreshErr != nil {
+		return nil, refreshErr
+	}
+
+	deleteTokenErr := c.repository.DeleteTokenWithAccessToken(token.AccessToken)
+	if deleteTokenErr != nil {
+		return nil, deleteTokenErr
+	}
+
+	user, _, err := c.repository.FindUserWithUserId(&token.UserId)
+	if err != nil {
+		return nil, err
+	}
+
+	newToken, addTokenErr := c.AddToken(user)
+	if addTokenErr != nil {
+		return nil, addTokenErr
+	}
+
+	return newToken, nil
+
 }

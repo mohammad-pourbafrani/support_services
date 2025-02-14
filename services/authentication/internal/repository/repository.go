@@ -20,6 +20,11 @@ type (
 		UserExistsByPhoneNumber(phoneNumber *string) (bool, *types.Error)
 		AddToken(token *models.TokenDto) *types.Error
 		GetPasswordWithUserId(userId *int64) (*models.Password, bool, *types.Error)
+		UpdatePassword(data *models.PasswordDto) *types.Error
+		DeleteTokensWithUserId(userId *int64) *types.Error
+		GetTokenByAccessTokenAndRefreshToken(accessToken *string, refreshToken *string) (*models.TokenDto, *types.Error)
+		DeleteTokenWithAccessToken(accessToken string) *types.Error
+		FindUserWithUserId(userId *int64) (*models.User, bool, *types.Error)
 	}
 	authenticationRepository struct {
 		db   *sql.DB

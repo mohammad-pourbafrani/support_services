@@ -111,13 +111,32 @@ func (c *AuthenticationHandler) Verify(ctx context.Context, request *pb.VerifyRe
 }
 
 func (c *AuthenticationHandler) ResetPassword(ctx context.Context, request *pb.ResetPasswordRequest) (*pb.Empty, error) {
-	return nil, nil
+	err := c.authenticationService.ResetPassword(&models.ResetPasswordDto{PhoneNumber: request.PhoneNumber})
+	if err != nil {
+		return nil, err.ErrorToGRPCStatus()
+	}
+	return &pb.Empty{}, nil
 }
 
 func (c *AuthenticationHandler) ChangePassword(ctx context.Context, request *pb.ChangePasswordRequest) (*pb.Empty, error) {
-	return nil, nil
+	err := c.authenticationService.ChangePassword(&models.ChangePasswordDto{Code: request.Code.Code, PhoneNumber: request.Code.PhoneNumber, Password: request.Password})
+	if err != nil {
+		return nil, err.ErrorToGRPCStatus()
+	}
+	return &pb.Empty{}, nil
 }
 
 func (c *AuthenticationHandler) RefreshToken(ctx context.Context, request *pb.Token) (*pb.Token, error) {
-	return nil, nil
+	token, err := c.tokenService.RenewToken(&models.RenewTokenDto{AccessToken: request.AccessToken, RefreshToken: request.RefreshToken})
+
+	if err != nil {
+		return nil, err.ErrorToGRPCStatus()
+	}
+
+	return &pb.Token{
+		AccessToken:    token.AccessToken,
+		RefreshToken:   token.RefreshToken,
+		AccessExpTime:  token.AccessExpireTime.Unix(),
+		RefreshExpTime: token.AccessExpireTime.Unix(),
+	}, nil
 }

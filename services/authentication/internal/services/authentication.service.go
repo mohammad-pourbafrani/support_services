@@ -14,6 +14,8 @@ type (
 		VerifyRegisterUser(data *models.VerifyCodeDto) (*models.User, *types.Error)
 		LogIn(data *models.LogInDto) (*models.User, *types.Error)
 		LogInWithVerifyCode(data *models.VerifyCodeDto) (*models.User, *types.Error)
+		ResetPassword(data *models.ResetPasswordDto) *types.Error
+		ChangePassword(data *models.ChangePasswordDto) *types.Error
 	}
 
 	authenticationService struct {
@@ -25,11 +27,26 @@ func NewAuthenticationService(repository repository.AuthenticationRepository) Au
 	return &authenticationService{repository: repository}
 }
 
+func (c *authenticationService) checkUser(phoneNumber *string) (*models.User, *types.Error) {
+	user, exist, err := c.repository.FindUserWithPhoneNumber(phoneNumber)
+
+	if err != nil {
+		return nil, err
+	}
+
+	if exist && !user.Verify {
+		return nil, types.NewBadRequestError("user not verified , please verify user")
+	} else if !exist {
+		return nil, types.NewBadRequestError("user not exist , please sign up")
+	}
+	return user, nil
+}
+
 func (c *authenticationService) RegisterUser(data *models.UserDto) *types.Error {
 
 	if user, exist, existErr := c.repository.FindUserWithPhoneNumber(&data.PhoneNumber); existErr != nil {
 		return existErr
-	} else if user != nil && user.Verify {
+	} else if exist && user.Verify {
 		return types.NewBadRequestError("user exist , please sign in or reset password")
 	} else if !exist {
 		res, userErr := c.repository.AddUser(data)
@@ -46,7 +63,7 @@ func (c *authenticationService) RegisterUser(data *models.UserDto) *types.Error 
 	)
 
 	for check {
-		code, randErr := utils.NextRandomInt32(120001, 510001)
+		code, randErr := utils.NextRandomInt32(120001, 410001)
 		if randErr != nil {
 			return types.NewInternalError(randErr.Error())
 		}
@@ -98,16 +115,10 @@ func (c *authenticationService) VerifyRegisterUser(data *models.VerifyCodeDto) (
 
 func (c *authenticationService) LogIn(data *models.LogInDto) (*models.User, *types.Error) {
 
-	user, exist, err := c.repository.FindUserWithPhoneNumber(&data.PhoneNumber)
+	user, err := c.checkUser(&data.PhoneNumber)
 
 	if err != nil {
 		return nil, err
-	}
-
-	if exist && !user.Verify {
-		return nil, types.NewBadRequestError("user not verified , please verify user")
-	} else if !exist {
-		return nil, types.NewBadRequestError("user not exist , please sign up")
 	}
 
 	if data.SignInMethod == models.PASSWORD {
@@ -129,7 +140,7 @@ func (c *authenticationService) LogIn(data *models.LogInDto) (*models.User, *typ
 		)
 
 		for check {
-			code, randErr := utils.NextRandomInt32(510002, 990099)
+			code, randErr := utils.NextRandomInt32(410002, 690099)
 			if randErr != nil {
 				return nil, types.NewInternalError(randErr.Error())
 			}
@@ -157,16 +168,9 @@ func (c *authenticationService) LogIn(data *models.LogInDto) (*models.User, *typ
 
 func (c *authenticationService) LogInWithVerifyCode(data *models.VerifyCodeDto) (*models.User, *types.Error) {
 
-	user, exist, err := c.repository.FindUserWithPhoneNumber(&data.PhoneNumber)
-
+	user, err := c.checkUser(&data.PhoneNumber)
 	if err != nil {
 		return nil, err
-	}
-
-	if exist && !user.Verify {
-		return nil, types.NewBadRequestError("user not verified , please verify user")
-	} else if !exist {
-		return nil, types.NewBadRequestError("user not exist , please sign up")
 	}
 
 	res, redisError := c.repository.GetVerifyCode(data)
@@ -180,4 +184,67 @@ func (c *authenticationService) LogInWithVerifyCode(data *models.VerifyCodeDto) 
 		return nil, types.NewBadRequestError("your verify code not exist")
 	}
 
+}
+
+func (c *authenticationService) ResetPassword(data *models.ResetPasswordDto) *types.Error {
+
+	_, err := c.checkUser(&data.PhoneNumber)
+
+	if err != nil {
+		return err
+	}
+
+	var (
+		check      bool = true
+		verifyCode int32
+	)
+
+	for check {
+		code, randErr := utils.NextRandomInt32(710002, 990099)
+		if randErr != nil {
+			return types.NewInternalError(randErr.Error())
+		}
+
+		existCode, err := c.repository.CheckExistCode(fmt.Sprintf("%d", code))
+		if err != nil {
+			return err
+		}
+		if !existCode {
+			verifyCode = code
+			check = false
+		}
+	}
+	//TODO: send verify code to user
+	fmt.Printf("verify code : %v", verifyCode)
+	redisError := c.repository.SetVerifyCode(&models.VerifyCodeDto{PhoneNumber: data.PhoneNumber, Code: fmt.Sprintf("%d", verifyCode)})
+	if redisError != nil {
+		return redisError
+	}
+
+	return nil
+}
+
+func (c *authenticationService) ChangePassword(data *models.ChangePasswordDto) *types.Error {
+
+	user, err := c.checkUser(&data.PhoneNumber)
+	if err != nil {
+		return err
+	}
+
+	res, redisErr := c.repository.GetVerifyCode(&models.VerifyCodeDto{Code: data.Code, PhoneNumber: data.PhoneNumber})
+	if redisErr != nil {
+		return redisErr
+	}
+
+	if *res == data.PhoneNumber {
+		if err := c.repository.UpdatePassword(&models.PasswordDto{UserId: user.UserId, Password: data.Password}); err != nil {
+			return err
+		}
+		if err := c.repository.DeleteTokensWithUserId(&user.UserId); err != nil {
+			return err
+		}
+	} else {
+		return types.NewBadRequestError("verify code not correct")
+	}
+	return nil
 }

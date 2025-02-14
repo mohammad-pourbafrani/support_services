@@ -1,5 +1,5 @@
 package models
 
 type Verify struct {
-	Code string
+	Code string `json:"code"`
 }

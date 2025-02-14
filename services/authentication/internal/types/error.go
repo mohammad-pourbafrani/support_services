@@ -14,6 +14,12 @@ import (
 // code 1007 insert token data issue in token repository
 // code 1008 generate access token issue in token service
 // code 1009 generate refresh token issue in token service
+// code 1010 update password.password data issue in password repository
+// code 1011 delete user tokens data issue in token repository
+// code 1012 not fond token in token repository
+// code 1013 token expired in utils validate
+// code 1014 delete token with access token issue in token repository
+// code 1015 select user issue in user repository
 
 // Error represents an application-specific error with a message and code.
 type Error struct {
