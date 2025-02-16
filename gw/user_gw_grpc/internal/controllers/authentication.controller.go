@@ -28,13 +28,13 @@ func (c *AuthenticationController) Verify(ctx context.Context, request *pb.Verif
 }
 
 func (c *AuthenticationController) ResetPassword(ctx context.Context, request *pb.ResetPasswordRequest) (*pb.Empty, error) {
-	return nil, nil
+	return c.authenticationService.ResetPass(ctx, request)
 }
 
 func (c *AuthenticationController) ChangePassword(ctx context.Context, request *pb.ChangePasswordRequest) (*pb.Empty, error) {
-	return nil, nil
+	return c.authenticationService.ChangePass(ctx, request)
 }
 
 func (c *AuthenticationController) RefreshToken(ctx context.Context, request *pb.Token) (*pb.Token, error) {
-	return nil, nil
+	return c.authenticationService.RNewToken(ctx, request)
 }

@@ -10,6 +10,9 @@ type (
 		SignUp(ctx context.Context, request *pb.SignUpRequest) (*pb.Empty, error)
 		VerifySignUp(ctx context.Context, request *pb.VerifyRequest) (*pb.Token, error)
 		SignIn(ctx context.Context, request *pb.SignInRequest) (*pb.SignInResponse, error)
+		ResetPass(ctx context.Context, request *pb.ResetPasswordRequest) (*pb.Empty, error)
+		ChangePass(ctx context.Context, request *pb.ChangePasswordRequest) (*pb.Empty, error)
+		RNewToken(ctx context.Context, request *pb.Token) (*pb.Token, error)
 	}
 
 	authenticationService struct {
@@ -33,4 +36,16 @@ func (s *authenticationService) VerifySignUp(ctx context.Context, request *pb.Ve
 
 func (s *authenticationService) SignIn(ctx context.Context, request *pb.SignInRequest) (*pb.SignInResponse, error) {
 	return s.authenticationClient.SignIn(ctx, request)
+}
+
+func (s *authenticationService) ResetPass(ctx context.Context, request *pb.ResetPasswordRequest) (*pb.Empty, error) {
+	return s.authenticationClient.ResetPassword(ctx, request)
+}
+
+func (s *authenticationService) ChangePass(ctx context.Context, request *pb.ChangePasswordRequest) (*pb.Empty, error) {
+	return s.authenticationClient.ChangePassword(ctx, request)
+}
+
+func (s *authenticationService) RNewToken(ctx context.Context, request *pb.Token) (*pb.Token, error) {
+	return s.authenticationClient.RefreshToken(ctx, request)
 }
