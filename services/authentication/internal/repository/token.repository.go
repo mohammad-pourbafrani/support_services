@@ -28,10 +28,11 @@ func (c *authenticationRepository) DeleteTokensWithUserId(userId *int64) *types.
 }
 
 func (c *authenticationRepository) GetTokenByAccessTokenAndRefreshToken(accessToken *string, refreshToken *string) (*models.TokenDto, *types.Error) {
-	query := `SELECT access_token, refresh_token, user_id, user_role ,created_at, access_token_expire_at, refresh_token_expire_at FROM "tokens" WHERE access_token = $1 AND refresh_token = $2`
+	query := `SELECT access_token, refresh_token, user_id, user_role , access_token_expire_at, refresh_token_expire_at FROM "tokens" WHERE access_token = $1 AND refresh_token = $2`
 	var token models.TokenDto
 	err := c.db.QueryRow(query, accessToken, refreshToken).Scan(&token.AccessToken, &token.RefreshToken, &token.UserId, &token.UserRole, &token.AccessExpireTime, &token.RefreshExpireTime)
 	if err != nil {
+		fmt.Println(err)
 		if err == sql.ErrNoRows {
 			return nil, types.NewNotFoundError("token not found, error code #1012")
 		}
